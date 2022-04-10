@@ -63,17 +63,19 @@ exports.getAll = function (res) {
 
 exports.insert = function (req, res) {
     try {
-        let id = getCurrentId() + 1;
-	console.log(id);
-        let sql = `INSERT INTO test (${id}, ${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
-        mysqlConn.query(sql, (err, result) => {
-            if (err) {
-                console.log(err + "\nUnable to get all rows.");
-                res.send(500, err);
-            }
-            console.log(`Row ${id} ${req.body.name} ${req.body.time} was inserted`);
-            res.json(result);
-        });
+        getCurrentId().then(currentMaxId => {
+            let id = currentMaxId + 1;
+            console.log(id);
+            let sql = `INSERT INTO test (${id}, ${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
+            mysqlConn.query(sql, (err, result) => {
+                if (err) {
+                    console.log(err + "\nUnable to get all rows.");
+                    res.send(500, err);
+                }
+                console.log(`Row ${id} ${req.body.name} ${req.body.time} was inserted`);
+                res.json(result);
+            });
+        }, idError => throw idError);
     } catch (e) {
         console.log(e + "\nConnection Failed...");
         res.send(500, err);
@@ -97,19 +99,17 @@ exports.remove = function (id, res) {
     }
 }
 
-function getCurrentId () {
+async function getCurrentId () {
     let sql = "SELECT id FROM test ORDER BY id DESC LIMIT 1;";
     mysqlConn.query(sql, (err, result) => {
         if (err) {
-            console.log(err + "\nUnable to get all rows.");
+            console.log(err + "\nUnable to get max id.");
             throw err;
         }
-        console.log("Current id: " + result);
-	if (result instanceof String) {
-	    console.log("String.....");
-	    return result;
-	}
-	console.log("return 0;");
+        console.log("Current max id: " + result);
+        if (result) {
+            return result;
+        }
         return 0;
     });
 }
