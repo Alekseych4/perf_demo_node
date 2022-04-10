@@ -33,7 +33,7 @@ exports.createTable = function () {
 	    console.log(err.stack + "\nError during USE DB query");
 	console.log("Using database PerfDemoNode");
     });	
-    let sql = `CREATE TABLE IF NOT EXISTS ${table} (id BIGINT PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP NOT NULL);`;
+    let sql = `CREATE TABLE IF NOT EXISTS ${table} (id BIGINT AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP NOT NULL);`;
     try {
         mysqlConn.query(sql, (err, result) => {
             if (err)
@@ -51,34 +51,31 @@ exports.getAll = function (res) {
         mysqlConn.query(sql, (err, result) => {
             if (err) {
                 console.log(err + "\nUnable to get all rows.");
-                res.send(500, err);
+                res.status(500).send(err);
             }
             res.json(result);
         });
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.send(500, err);
+        res.status(500).send(err);
     }
 }
 
 exports.insert = function (req, res) {
     try {
-        getCurrentId().then(currentMaxId => {
-            let id = currentMaxId + 1;
-            console.log(id);
-            let sql = `INSERT INTO test (${id}, ${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
-            mysqlConn.query(sql, (err, result) => {
-                if (err) {
-                    console.log(err + "\nUnable to get all rows.");
-                    res.send(500, err);
-                }
-                console.log(`Row ${id} ${req.body.name} ${req.body.time} was inserted`);
-                res.json(result);
-            });
-        }, idError => throw idError);
+        let sql = `INSERT INTO ${table} (${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
+        mysqlConn.query(sql, (err, result) => {
+            if (err) {
+                console.log(err + "\nUnable to get all rows.");
+                res.status(500).send(err);
+            }
+            console.log(`Row ${req.body.name} ${req.body.time} was inserted with id ${result.insertId}`);
+            res.json(result);
+        });
+
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.send(500, err);
+        res.status(500).send(err);
     }
 }
 
@@ -89,27 +86,25 @@ exports.remove = function (id, res) {
         mysqlConn.query(sql, (err, result) => {
             if (err) {
                 console.log(err + "\nUnable delete row.");
-                res.send(500, err);
+                res.status(500).send(err);
             }
-            res.send(200, `Item with id ${id} was removed`);
+            res.send(`Item with id ${id} was removed`);
         });
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.send(500, err);
+        res.status(500).send(err);
     }
 }
 
-async function getCurrentId () {
-    let sql = "SELECT id FROM test ORDER BY id DESC LIMIT 1;";
-    mysqlConn.query(sql, (err, result) => {
-        if (err) {
-            console.log(err + "\nUnable to get max id.");
-            throw err;
-        }
-        console.log("Current max id: " + result);
-        if (result) {
-            return result;
-        }
-        return 0;
-    });
+exports.removeAll = function (res) {
+    try {
+        let sql = `DELETE FROM ${table};`;
+        mysqlConn.query(sql, (err, result) => {
+            if (err) {
+                console.log(err + "\nUnable delete row.");
+                res.status(500).send(err);
+            }
+            res.send("All items were removed");
+        });
+    }
 }

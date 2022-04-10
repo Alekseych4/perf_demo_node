@@ -29,4 +29,8 @@ app.post("/db/remove/:id", (req, res) => {
     test_db_service.remove(req.params.id, res);
 });
 
+app.get("/db/removeAll", (req, res) => {
+    test_db_service.removeAll(res); 
+});
+
 
