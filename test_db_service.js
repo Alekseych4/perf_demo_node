@@ -85,7 +85,7 @@ exports.remove = function (id, res) {
         let sql = `DELETE FROM test WHERE id=${id};`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
-                console.log(err + "\nUnable delete row.");
+                console.log(err + "\nUnable to delete row.");
                 res.status(500).send(err);
             }
             res.send(`Item with id ${id} was removed`);
