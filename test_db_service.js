@@ -1,4 +1,5 @@
 const mysql = require("mysql");
+const table = "test";
 const mysqlConn = mysql.createConnection({
     host: 'localhost',
     user: process.env.MYSQL_USER,
@@ -11,7 +12,6 @@ mysqlConn.connect((err) =>{
 	return;
     }
     console.log('Mysql Connected with App...');
-    test_db_service.createDB(mysqlConn);
 });
 
 exports.createDB = function () {
@@ -19,22 +19,29 @@ exports.createDB = function () {
     try {
        mysqlConn.query(sql, (err, result) => {
            if (err)
-               console.log(err.stack + "\n Unable to create table.");
+               console.log(err.stack + "\nUnable to create database.");
        });
     } catch (e) { 
-	console.log(e + "\n Connection Failed...");
+	console.log(e + "\nConnection Failed...");
     }
 }
 
 exports.createTable = function () {
-    let sql = "CREATE TABLE IF NOT EXISTS test (id LONG PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP NOT NULL);";
+    let use = "USE PerfDemoNode";
+    mysqlConn.query(use, (err, res) => {
+	if (err)
+	    console.log(err.stack + "\nError during USE DB query");
+	console.log("Using database PerfDemoNode");
+    });	
+    let sql = `CREATE TABLE IF NOT EXISTS ${table} (id BIGINT PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP NOT NULL);`;
     try {
         mysqlConn.query(sql, (err, result) => {
             if (err)
-                console.log(err + "\n Unable to create table.");
+                console.log(err + `\nUnable to create table ${table}.`);
+	    console.log(`Table ${table} is existing now.`);
         });
     } catch (e) {
-	console.log(e + "\n Connection Failed...");
+	console.log(e + "\nConnection Failed...");
     }
 }
 
@@ -43,13 +50,13 @@ exports.getAll = function (res) {
     try {
         mysqlConn.query(sql, (err, result) => {
             if (err) {
-                console.log(err + "\n Unable to get all rows.");
+                console.log(err + "\nUnable to get all rows.");
                 res.send(500, err);
             }
             res.json(result);
         });
     } catch (e) {
-        console.log(e + "\n Connection Failed...");
+        console.log(e + "\nConnection Failed...");
         res.send(500, err);
     }
 }
@@ -57,17 +64,18 @@ exports.getAll = function (res) {
 exports.insert = function (req, res) {
     try {
         let id = getCurrentId() + 1;
+	console.log(id);
         let sql = `INSERT INTO test (${id}, ${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
-                console.log(err + "\n Unable to get all rows.");
+                console.log(err + "\nUnable to get all rows.");
                 res.send(500, err);
             }
             console.log(`Row ${id} ${req.body.name} ${req.body.time} was inserted`);
             res.json(result);
         });
     } catch (e) {
-        console.log(e + "\n Connection Failed...");
+        console.log(e + "\nConnection Failed...");
         res.send(500, err);
     }
 }
@@ -78,13 +86,13 @@ exports.remove = function (id, res) {
         let sql = `DELETE FROM test WHERE id=${id};`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
-                console.log(err + "\n Unable delete row.");
+                console.log(err + "\nUnable delete row.");
                 res.send(500, err);
             }
             res.send(200, `Item with id ${id} was removed`);
         });
     } catch (e) {
-        console.log(e + "\n Connection Failed...");
+        console.log(e + "\nConnection Failed...");
         res.send(500, err);
     }
 }
@@ -93,10 +101,15 @@ function getCurrentId () {
     let sql = "SELECT id FROM test ORDER BY id DESC LIMIT 1;";
     mysqlConn.query(sql, (err, result) => {
         if (err) {
-            console.log(err + "\n Unable to get all rows.");
+            console.log(err + "\nUnable to get all rows.");
             throw err;
         }
-        console.log("\nCurrent id: " + result);
-        return result;
+        console.log("Current id: " + result);
+	if (result instanceof String) {
+	    console.log("String.....");
+	    return result;
+	}
+	console.log("return 0;");
+        return 0;
     });
 }
