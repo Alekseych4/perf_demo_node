@@ -81,15 +81,18 @@ exports.insert = function (req, res) {
 
 exports.remove = function (id, res) {
     try {
-        let id = mysqlConn.escape(id);
-	console.log("Id to remove: " + id);    
-        let sql = `DELETE FROM test WHERE id=${id};`;
+        let intId = parseInt(id);
+        if (isNaN(intId)) {
+            res.status(400).send("Sent id is not a number");
+            return;
+        }
+        let sql = `DELETE FROM test WHERE id=${intId};`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
                 console.log(err + "\nUnable to delete row.");
                 res.status(500).send(err);
             }
-            res.send(`Item with id ${id} was removed`);
+            res.send(`Item with id ${intId} was removed`);
         });
     } catch (e) {
         console.log(e + "\nConnection Failed...");
@@ -108,7 +111,7 @@ exports.removeAll = function (res) {
             res.send("All items were removed");
         });
     } catch (e) {
-	console.log(e.stack + "\nConnection failed...");
-	res.status(500).send(e);
+        console.log(e.stack + "\nConnection failed...");
+        res.status(500).send(e);
     }
 }
