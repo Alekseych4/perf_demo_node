@@ -64,8 +64,9 @@ exports.getAll = function (res) {
 exports.insert = function (req, res) {
     try {
         getCurrentId().then(currentMaxId => {
-            let id = currentMaxId + 1;
-            console.log(id);
+	    console.log("currentMaxID: " + currentMaxId);
+            let id = currentMaxId + 1; 
+            console.log("id: " + id);
             let sql = `INSERT INTO test (${id}, ${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
             mysqlConn.query(sql, (err, result) => {
                 if (err) {
@@ -75,7 +76,7 @@ exports.insert = function (req, res) {
                 console.log(`Row ${id} ${req.body.name} ${req.body.time} was inserted`);
                 res.json(result);
             });
-        }, idError => throw idError);
+        }, idError => {throw idError;});
     } catch (e) {
         console.log(e + "\nConnection Failed...");
         res.send(500, err);
@@ -88,7 +89,7 @@ exports.remove = function (id, res) {
         let sql = `DELETE FROM test WHERE id=${id};`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
-                console.log(err + "\nUnable delete row.");
+                console.log(err + "\nUnable to delete row.");
                 res.send(500, err);
             }
             res.send(200, `Item with id ${id} was removed`);
