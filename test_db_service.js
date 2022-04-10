@@ -33,7 +33,7 @@ exports.createTable = function () {
 	    console.log(err.stack + "\nError during USE DB query");
 	console.log("Using database PerfDemoNode");
     });	
-    let sql = `CREATE TABLE IF NOT EXISTS ${table} (id BIGINT AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP NOT NULL);`;
+    let sql = `CREATE TABLE IF NOT EXISTS ${table} (id BIGINT AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
     try {
         mysqlConn.query(sql, (err, result) => {
             if (err)
@@ -57,31 +57,32 @@ exports.getAll = function (res) {
         });
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.status(500).send(err);
+        res.status(500).send(e);
     }
 }
 
 exports.insert = function (req, res) {
     try {
-        let sql = `INSERT INTO ${table} (${mysqlConn.escape(req.body.name)}, ${mysqlConn.escape(req.body.time)});`;
+        let sql = `INSERT INTO ${table} (name) VALUES (${mysqlConn.escape(req.body.name)});`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
                 console.log(err + "\nUnable to get all rows.");
                 res.status(500).send(err);
             }
-            console.log(`Row ${req.body.name} ${req.body.time} was inserted with id ${result.insertId}`);
+            console.log(`Row ${req.body.name} ${req.body.time} was inserted`);
             res.json(result);
         });
 
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.status(500).send(err);
+        res.status(500).send(e);
     }
 }
 
 exports.remove = function (id, res) {
     try {
         let id = mysqlConn.escape(id);
+	console.log("Id to remove: " + id);    
         let sql = `DELETE FROM test WHERE id=${id};`;
         mysqlConn.query(sql, (err, result) => {
             if (err) {
@@ -92,7 +93,7 @@ exports.remove = function (id, res) {
         });
     } catch (e) {
         console.log(e + "\nConnection Failed...");
-        res.status(500).send(err);
+        res.status(500).send(e);
     }
 }
 
@@ -106,5 +107,8 @@ exports.removeAll = function (res) {
             }
             res.send("All items were removed");
         });
+    } catch (e) {
+	console.log(e.stack + "\nConnection failed...");
+	res.status(500).send(e);
     }
 }
