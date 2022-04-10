@@ -2,12 +2,14 @@ const mysql = require("mysql");
 const mysqlConn = mysql.createConnection({
     host: 'localhost',
     user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: 'PerfDemoNode'
+    password: process.env.MYSQL_PASSWORD
 });
 
 mysqlConn.connect((err) =>{
-    if(err) throw err;
+    if(err) {
+        console.log(err.stack);
+	return;
+    }
     console.log('Mysql Connected with App...');
     test_db_service.createDB(mysqlConn);
 });
@@ -17,9 +19,11 @@ exports.createDB = function () {
     try {
        mysqlConn.query(sql, (err, result) => {
            if (err)
-               console.log(err + "\n Unable to create table.");
+               console.log(err.stack + "\n Unable to create table.");
        });
-    } catch (e) => console.log(e + "\n Connection Failed...");
+    } catch (e) { 
+	console.log(e + "\n Connection Failed...");
+    }
 }
 
 exports.createTable = function () {
@@ -29,7 +33,9 @@ exports.createTable = function () {
             if (err)
                 console.log(err + "\n Unable to create table.");
         });
-    } catch (e) => console.log(e + "\n Connection Failed...");
+    } catch (e) {
+	console.log(e + "\n Connection Failed...");
+    }
 }
 
 exports.getAll = function (res) {

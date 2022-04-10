@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http");
-const test_db_service = require("./test_db_service");
+const test_db_service = require("test_db_service");
 
 http.createServer(app).listen(5000, () => {
     console.log("Server started on port 5000");
