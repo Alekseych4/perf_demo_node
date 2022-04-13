@@ -25,11 +25,11 @@ app.post("/db/insert", (req, res) => {
     test_db_service.insert(req, res);
 });
 
-app.post("/db/remove/:id", (req, res) => {
+app.delete("/db/remove/:id", (req, res) => {
     test_db_service.remove(req.params.id, res);
 });
 
-app.get("/db/removeAll", (req, res) => {
+app.delete("/db/removeAll", (req, res) => {
     test_db_service.removeAll(res); 
 });
 
